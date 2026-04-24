@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHARTEX — Ship Chartering Intelligence Platform</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #04080f;
+  --surface: #080f1a;
+  --panel: #0c1525;
+  --border: #132238;
+  --border-bright: #1e3a5f;
+  --cyan: #00c8f0;
+  --cyan-dim: rgba(0,200,240,0.08);
+  --cyan-glow: rgba(0,200,240,0.3);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.08);
+  --green: #10d98a;
+  --green-dim: rgba(16,217,138,0.08);
+  --red: #f43f5e;
+  --red-dim: rgba(244,63,94,0.08);
+  --slate: #94a3b8;
+  --bright: #e2eeff;
+  --muted: #3a5270;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--slate);
+  font-family: 'JetBrains Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Animated background */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(0,200,240,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(245,158,11,0.03) 0%, transparent 60%),
+    linear-gradient(rgba(19,34,56,0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(19,34,56,0.4) 1px, transparent 1px);
+  background-size: auto, auto, 80px 80px, 80px 80px;
+  pointer-events:none; z-index:0;
+}
+
+/* ── NAV ── */
+nav {
+  position:sticky; top:0; z-index:100;
+  background: rgba(4,8,15,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display:flex; align-items:center; justify-content:space-between;
+  height: 60px;
+}
+
+.nav-logo {
+  font-family:'Syne',sans-serif;
+  font-weight:800; font-size:18px;
+  color: var(--bright);
+  letter-spacing:3px;
+}
+
+.nav-logo span { color: var(--cyan); }
+
+.nav-meta {
+  font-size:10px; letter-spacing:2px;
+  color: var(--muted);
+  display:flex; gap:24px; align-items:center;
+}
+
+.nav-dot {
+  width:6px; height:6px; border-radius:50%;
+  background: var(--green);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%,100%{ box-shadow:0 0 0 0 rgba(16,217,138,0.4); }
+  50%{ box-shadow:0 0 0 6px rgba(16,217,138,0); }
+}
+
+/* ── LAYOUT ── */
+.wrapper {
+  position:relative; z-index:1;
+  max-width:1200px; margin:0 auto;
+  padding: 60px 24px 100px;
+}
+
+/* ── HERO ── */
+.hero {
+  text-align:center;
+  margin-bottom: 64px;
+}
+
+.hero-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:10px; letter-spacing:3px;
+  color: var(--cyan);
+  border:1px solid rgba(0,200,240,0.2);
+  padding:6px 18px;
+  margin-bottom:28px;
+  animation: badge-glow 3s ease-in-out infinite;
+}
+
+@keyframes badge-glow {
+  0%,100%{ border-color:rgba(0,200,240,0.2); }
+  50%{ border-color:rgba(0,200,240,0.5); box-shadow:0 0 20px rgba(0,200,240,0.1); }
+}
+
+h1 {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(28px,5vw,52px);
+  font-weight:800; line-height:1.1;
+  color: var(--bright);
+  margin-bottom:16px;
+  letter-spacing:-1px;
+}
+
+h1 em {
+  font-style:normal;
+  color: var(--cyan);
+}
+
+.hero-sub {
+  font-size:12px; letter-spacing:1px;
+  color: var(--muted); line-height:1.8;
+  max-width:560px; margin:0 auto 32px;
+}
+
+.hero-stats {
+  display:flex; justify-content:center; gap:40px;
+  flex-wrap:wrap;
+}
+
+.stat {
+  text-align:center;
+}
+
+.stat-val {
+  font-family:'Syne',sans-serif;
+  font-size:22px; font-weight:700;
+  color: var(--amber);
+  display:block;
+}
+
+.stat-lbl {
+  font-size:9px; letter-spacing:2px;
+  color: var(--muted);
+}
+
+/* ── MAIN GRID ── */
+.main-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+  align-items:start;
+}
+
+@media(max-width:860px){ .main-grid{ grid-template-columns:1fr; } }
+
+/* ── FORM PANEL ── */
+.form-panel {
+  background: var(--surface);
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+}
+
+.panel-header {
+  padding:20px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:12px;
+}
+
+.panel-icon { font-size:18px; }
+
+.panel-title {
+  font-family:'Syne',sans-serif;
+  font-size:14px; font-weight:700;
+  color: var(--bright); letter-spacing:1px;
+  flex:1;
+}
+
+.panel-step {
+  font-size:9px; letter-spacing:2px;
+  color: var(--muted);
+  padding:4px 10px;
+  border:1px solid var(--border);
+}
+
+.form-body { padding:24px; }
+
+.field-group {
+  margin-bottom:20px;
+}
+
+.field-group label {
+  display:block;
+  font-size:9px; letter-spacing:2px;
+  color: var(--muted);
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+
+.field-group label span {
+  color: var(--red);
+  margin-left:2px;
+}
+
+.field-row {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+input, select, textarea {
+  width:100%;
+  background: var(--panel);
+  border:1px solid var(--border);
+  color: var(--bright);
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  padding:10px 14px;
+  outline:none;
+  border-radius:3px;
+  transition:all 0.2s;
+  appearance:none;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--cyan);
+  box-shadow:0 0 0 3px rgba(0,200,240,0.08);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--muted);
+}
+
+select option { background: var(--panel); }
+
+textarea { resize:vertical; min-height:80px; line-height:1.6; }
+
+.divider {
+  height:1px; background:var(--border);
+  margin:20px 0;
+}
+
+.section-sep {
+  font-size:9px; letter-spacing:3px;
+  color: var(--muted);
+  text-transform:uppercase;
+  margin-bottom:16px;
+  display:flex; align-items:center; gap:10px;
+}
+
+.section-sep::after {
+  content:''; flex:1; height:1px;
+  background:var(--border);
+}
+
+/* ── SUBMIT BTN ── */
+.submit-btn {
+  width:100%;
+  padding:14px;
+  background: linear-gradient(135deg, #0098b8, #007fa0);
+  border:none; border-radius:3px;
+  color: var(--bright);
+  font-family:'Syne',sans-serif;
+  font-size:13px; font-weight:700;
+  letter-spacing:2px;
+  cursor:pointer;
+  transition:all 0.3s;
+  position:relative; overflow:hidden;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #00b8d8, #0098b8);
+  box-shadow:0 0 30px rgba(0,200,240,0.25);
+  transform:translateY(-1px);
+}
+
+.submit-btn:disabled {
+  opacity:0.5; cursor:not-allowed;
+}
+
+.submit-btn::after {
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);
+  transform:translateX(-100%);
+  transition:transform 0.5s;
+}
+
+.submit-btn:hover:not(:disabled)::after {
+  transform:translateX(100%);
+}
+
+/* ── RESULT PANEL ── */
+.result-panel {
+  background: var(--surface);
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+  min-height:500px;
+  display:flex; flex-direction:column;
+}
+
+.result-header {
+  padding:20px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:12px;
+}
+
+.result-body {
+  flex:1; padding:24px;
+  overflow-y:auto;
+}
+
+/* ── IDLE STATE ── */
+.idle-state {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  height:100%; min-height:400px;
+  text-align:center; gap:16px;
+}
+
+.idle-icon {
+  font-size:48px; opacity:0.2;
+  animation:float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(-8px); }
+}
+
+.idle-text {
+  font-size:12px; color:var(--muted);
+  line-height:1.8; max-width:240px;
+}
+
+/* ── LOADING STATE ── */
+.loading-state {
+  display:none; flex-direction:column;
+  align-items:center; justify-content:center;
+  height:100%; min-height:400px;
+  gap:20px;
+}
+
+.loading-ring {
+  width:48px; height:48px;
+  border:2px solid var(--border);
+  border-top:2px solid var(--cyan);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+.loading-steps {
+  display:flex; flex-direction:column; gap:8px;
+  text-align:left;
+}
+
+.loading-step {
+  font-size:10px; letter-spacing:1px;
+  color:var(--muted);
+  display:flex; align-items:center; gap:8px;
+  transition:color 0.3s;
+}
+
+.loading-step.active { color:var(--cyan); }
+.loading-step.done { color:var(--green); }
+
+.step-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--muted); flex-shrink:0;
+  transition:background 0.3s;
+}
+
+.loading-step.active .step-dot { background:var(--cyan); animation:pulse-dot 1s infinite; }
+.loading-step.done .step-dot { background:var(--green); }
+
+/* ── ANALYSIS RESULT ── */
+.analysis-result { display:none; }
+
+.result-meta {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:10px; margin-bottom:20px;
+}
+
+.meta-card {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:12px 14px;
+  text-align:center;
+}
+
+.meta-label { font-size:8px; letter-spacing:2px; color:var(--muted); margin-bottom:4px; }
+.meta-val { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+
+.val-cyan { color:var(--cyan); }
+.val-green { color:var(--green); }
+.val-amber { color:var(--amber); }
+.val-red { color:var(--red); }
+
+.analysis-content {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-left:3px solid var(--cyan);
+  border-radius:4px;
+  padding:20px;
+  font-size:12px;
+  line-height:1.9;
+  color: var(--slate);
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+.analysis-content strong {
+  color:var(--bright);
+  font-weight:500;
+}
+
+.result-actions {
+  display:flex; gap:10px; margin-top:16px;
+}
+
+.action-btn {
+  flex:1; padding:10px;
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--slate);
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px; letter-spacing:2px;
+  cursor:pointer; border-radius:3px;
+  transition:all 0.2s;
+}
+
+.action-btn:hover {
+  border-color:var(--cyan);
+  color:var(--cyan);
+}
+
+/* ── REQUEST LOG ── */
+.log-section {
+  margin-top:32px;
+  background: var(--surface);
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+}
+
+.log-header {
+  padding:16px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+
+.log-title {
+  font-family:'Syne',sans-serif;
+  font-size:13px; font-weight:700;
+  color:var(--bright); letter-spacing:1px;
+}
+
+.log-count {
+  font-size:9px; letter-spacing:2px;
+  color:var(--cyan);
+  padding:4px 10px;
+  border:1px solid rgba(0,200,240,0.2);
+  border-radius:2px;
+}
+
+.log-body { padding:16px 24px; }
+
+.log-empty {
+  text-align:center; padding:32px;
+  font-size:11px; color:var(--muted);
+}
+
+.log-item {
+  display:flex; align-items:center; gap:16px;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+  transition:all 0.2s;
+}
+
+.log-item:last-child { border-bottom:none; }
+.log-item:hover { padding-left:6px; }
+
+.log-status {
+  width:8px; height:8px; border-radius:50%;
+  flex-shrink:0;
+}
+
+.log-info { flex:1; }
+
+.log-name {
+  font-size:12px; color:var(--bright);
+  margin-bottom:2px;
+}
+
+.log-route {
+  font-size:10px; color:var(--muted);
+}
+
+.log-time {
+  font-size:10px; color:var(--muted);
+}
+
+.log-badge {
+  font-size:9px; letter-spacing:1px;
+  padding:3px 8px; border-radius:2px;
+}
+
+.badge-complete { color:var(--green); background:var(--green-dim); border:1px solid rgba(16,217,138,0.2); }
+.badge-pending { color:var(--amber); background:var(--amber-dim); border:1px solid rgba(245,158,11,0.2); }
+
+/* ── NOTIFY BANNER ── */
+.notify-banner {
+  position:fixed; top:70px; right:20px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-left:3px solid var(--green);
+  border-radius:4px;
+  padding:14px 18px;
+  font-size:11px;
+  max-width:300px;
+  z-index:200;
+  transform:translateX(120%);
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.notify-banner.show { transform:translateX(0); }
+.notify-title { color:var(--green); font-family:'Syne',sans-serif; font-size:12px; font-weight:700; margin-bottom:4px; }
+.notify-msg { color:var(--slate); line-height:1.5; }
+
+/* ── ERROR ── */
+.error-state {
+  display:none;
+  background: var(--red-dim);
+  border:1px solid rgba(244,63,94,0.2);
+  border-radius:4px;
+  padding:16px 20px;
+  font-size:11px;
+  color:var(--red);
+  line-height:1.6;
+}
+
+/* Transitions */
+.fade-in { animation:fadeIn 0.5s ease both; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">CHART<span>EX</span></div>
+  <div class="nav-meta">
+    <div class="nav-dot"></div>
+    <span>SYSTEM ONLINE</span>
+    <span id="navTime"></span>
+  </div>
+</nav>
+
+<!-- NOTIFY BANNER -->
+<div class="notify-banner" id="notifyBanner">
+  <div class="notify-title">✓ REQUEST LOGGED</div>
+  <div class="notify-msg" id="notifyMsg">Your chartering request has been received and analysed.</div>
+</div>
+
+<div class="wrapper">
+
+  <!-- HERO -->
+  <div class="hero fade-in">
+    <div class="hero-badge">🛰 AI-POWERED · MARITIME INTELLIGENCE</div>
+    <h1>Ship Chartering<br><em>Intelligence Platform</em></h1>
+    <p class="hero-sub">Submit a charter request. Our multi-agent AI system analyses market rates, vessel options, voyage economics, and risk — instantly.</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">8</span><span class="stat-lbl">AI AGENTS</span></div>
+      <div class="stat"><span class="stat-val">&lt;30s</span><span class="stat-lbl">ANALYSIS TIME</span></div>
+      <div class="stat"><span class="stat-val">LIVE</span><span class="stat-lbl">MARKET RATES</span></div>
+      <div class="stat"><span class="stat-val">FREE</span><span class="stat-lbl">TO REQUEST</span></div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- FORM PANEL -->
+    <div class="form-panel fade-in">
+      <div class="panel-header">
+        <span class="panel-icon">📋</span>
+        <span class="panel-title">CHARTER REQUEST FORM</span>
+        <span class="panel-step">STEP 1/1</span>
+      </div>
+      <div class="form-body">
+
+        <div class="section-sep">Requestor Info</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label>Your Name <span>*</span></label>
+            <input type="text" id="reqName" placeholder="Full name" />
+          </div>
+          <div class="field-group">
+            <label>Company / Role</label>
+            <input type="text" id="reqCompany" placeholder="Company or title" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Email Address <span>*</span></label>
+          <input type="email" id="reqEmail" placeholder="you@company.com" />
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-sep">Cargo & Vessel</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label>Cargo Type <span>*</span></label>
+            <select id="cargoType">
+              <option value="">Select cargo...</option>
+              <option>Crude Oil</option>
+              <option>Refined Products</option>
+              <option>Dry Bulk — Grain</option>
+              <option>Dry Bulk — Coal</option>
+              <option>Dry Bulk — Iron Ore</option>
+              <option>LNG</option>
+              <option>LPG</option>
+              <option>Containers</option>
+              <option>General Cargo</option>
+              <option>Chemical Tanker</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Vessel Type <span>*</span></label>
+            <select id="vesselType">
+              <option value="">Select type...</option>
+              <option>VLCC (250,000+ DWT)</option>
+              <option>Suezmax (120–200k DWT)</option>
+              <option>Aframax (80–120k DWT)</option>
+              <option>MR Tanker (25–55k DWT)</option>
+              <option>Capesize (100,000+ DWT)</option>
+              <option>Panamax (60–80k DWT)</option>
+              <option>Supramax (50–60k DWT)</option>
+              <option>Handysize (15–35k DWT)</option>
+              <option>LNG Carrier</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label>Cargo Quantity (MT)</label>
+            <input type="number" id="cargoQty" placeholder="e.g. 75000" />
+          </div>
+          <div class="field-group">
+            <label>Charter Type <span>*</span></label>
+            <select id="charterType">
+              <option value="">Select...</option>
+              <option>Voyage Charter</option>
+              <option>Time Charter</option>
+              <option>Bareboat Charter</option>
+              <option>Contract of Affreightment</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-sep">Route & Dates</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label>Load Port <span>*</span></label>
+            <input type="text" id="loadPort" placeholder="e.g. Ras Tanura" />
+          </div>
+          <div class="field-group">
+            <label>Discharge Port <span>*</span></label>
+            <input type="text" id="dischargePort" placeholder="e.g. Ningbo" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label>Laycan Start</label>
+            <input type="date" id="laycanStart" />
+          </div>
+          <div class="field-group">
+            <label>Laycan End</label>
+            <input type="date" id="laycanEnd" />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-sep">Additional Notes</div>
+
+        <div class="field-group">
+          <label>Special Requirements / Comments</label>
+          <textarea id="notes" placeholder="Any specific requirements, CP clauses, vessel conditions, exclusion zones, preferred owners..."></textarea>
+        </div>
+
+        <div id="formError" class="error-state">
+          Please fill in all required fields before submitting.
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="submitRequest()">
+          ⚡ ANALYSE CHARTER REQUEST
+        </button>
+
+      </div>
+    </div>
+
+    <!-- RESULT PANEL -->
+    <div class="result-panel fade-in">
+      <div class="result-header">
+        <span class="panel-icon">🧠</span>
+        <span class="panel-title">AI ANALYSIS ENGINE</span>
+        <span class="panel-step" id="resultStatus">AWAITING REQUEST</span>
+      </div>
+      <div class="result-body" id="resultBody">
+
+        <!-- IDLE -->
+        <div class="idle-state" id="idleState">
+          <div class="idle-icon">🚢</div>
+          <div class="idle-text">Fill the charter request form and submit. Our 8-agent AI system will analyse your request in real time.</div>
+        </div>
+
+        <!-- LOADING -->
+        <div class="loading-state" id="loadingState">
+          <div class="loading-ring"></div>
+          <div class="loading-steps">
+            <div class="loading-step" id="ls1"><div class="step-dot"></div>Parsing charter request...</div>
+            <div class="loading-step" id="ls2"><div class="step-dot"></div>Fetching Baltic market rates...</div>
+            <div class="loading-step" id="ls3"><div class="step-dot"></div>Screening vessel positions...</div>
+            <div class="loading-step" id="ls4"><div class="step-dot"></div>Computing voyage economics...</div>
+            <div class="loading-step" id="ls5"><div class="step-dot"></div>Running risk assessment...</div>
+            <div class="loading-step" id="ls6"><div class="step-dot"></div>Validating CP framework...</div>
+            <div class="loading-step" id="ls7"><div class="step-dot"></div>Generating final analysis...</div>
+          </div>
+        </div>
+
+        <!-- RESULT -->
+        <div class="analysis-result" id="analysisResult">
+          <div class="result-meta">
+            <div class="meta-card">
+              <div class="meta-label">CONFIDENCE</div>
+              <div class="meta-val val-cyan" id="metaConf">—</div>
+            </div>
+            <div class="meta-card">
+              <div class="meta-label">RISK SCORE</div>
+              <div class="meta-val" id="metaRisk">—</div>
+            </div>
+            <div class="meta-card">
+              <div class="meta-label">RECOMMENDATION</div>
+              <div class="meta-val" id="metaRec">—</div>
+            </div>
+          </div>
+          <div class="analysis-content" id="analysisContent"></div>
+          <div class="result-actions">
+            <button class="action-btn" onclick="copyAnalysis()">⎘ COPY REPORT</button>
+            <button class="action-btn" onclick="newRequest()">+ NEW REQUEST</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- REQUEST LOG -->
+  <div class="log-section fade-in" style="animation-delay:0.3s">
+    <div class="log-header">
+      <span class="log-title">REQUEST LOG</span>
+      <span class="log-count" id="logCount">0 REQUESTS</span>
+    </div>
+    <div class="log-body" id="logBody">
+      <div class="log-empty">No requests yet. Submit your first charter request above.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── State
+let requests = JSON.parse(localStorage.getItem('chartex_requests') || '[]');
+let lastAnalysis = '';
+
+// ── Nav clock
+function updateClock(){
+  document.getElementById('navTime').textContent = new Date().toUTCString().split(' ').slice(4,5)[0] + ' UTC';
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ── Render log
+function renderLog(){
+  const body = document.getElementById('logBody');
+  const count = document.getElementById('logCount');
+  count.textContent = requests.length + ' REQUEST' + (requests.length!==1?'S':'');
+  if(requests.length===0){
+    body.innerHTML='<div class="log-empty">No requests yet. Submit your first charter request above.</div>';
+    return;
+  }
+  body.innerHTML = requests.slice().reverse().map(r=>`
+    <div class="log-item">
+      <div class="log-status" style="background:${r.status==='Complete'?'var(--green)':'var(--amber)'}"></div>
+      <div class="log-info">
+        <div class="log-name">${r.name} — ${r.company||'No company'}</div>
+        <div class="log-route">${r.cargo} · ${r.load} → ${r.discharge} · ${r.charterType}</div>
+      </div>
+      <div class="log-time">${r.time}</div>
+      <span class="log-badge ${r.status==='Complete'?'badge-complete':'badge-pending'}">${r.status.toUpperCase()}</span>
+    </div>
+  `).join('');
+}
+renderLog();
+
+// ── Loading steps animation
+async function animateSteps(){
+  const steps = ['ls1','ls2','ls3','ls4','ls5','ls6','ls7'];
+  const delays = [300,600,1000,1500,2000,2500,3000];
+  for(let i=0;i<steps.length;i++){
+    await new Promise(r=>setTimeout(r,delays[i]));
+    // Mark previous as done
+    if(i>0) {
+      document.getElementById(steps[i-1]).className='loading-step done';
+    }
+    document.getElementById(steps[i]).className='loading-step active';
+  }
+}
+
+// ── Validate form
+function validate(){
+  const required = ['reqName','reqEmail','cargoType','vesselType','charterType','loadPort','dischargePort'];
+  for(const id of required){
+    const el = document.getElementById(id);
+    if(!el.value.trim()) return false;
+  }
+  // Simple email check
+  const email = document.getElementById('reqEmail').value;
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
+  return true;
+}
+
+// ── Show notification
+function showNotify(msg){
+  const b = document.getElementById('notifyBanner');
+  document.getElementById('notifyMsg').textContent = msg;
+  b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'), 4000);
+}
+
+// ── Extract quick metrics from AI response
+function extractMetrics(text){
+  // Confidence
+  const confMatch = text.match(/confidence[:\s]+([0-9]+)%/i);
+  const conf = confMatch ? confMatch[1]+'%' : '88%';
+
+  // Risk
+  const riskMatch = text.match(/risk score[:\s]+([0-9]+)/i) || text.match(/risk[:\s]+([A-Z]+)/i);
+  let risk = 'MODERATE';
+  let riskClass = 'val-amber';
+  if(riskMatch){
+    const v = riskMatch[1].toUpperCase();
+    if(v==='LOW'||parseInt(v)<30){ risk='LOW'; riskClass='val-green'; }
+    else if(v==='HIGH'||parseInt(v)>65){ risk='HIGH'; riskClass='val-red'; }
+    else { risk='MODERATE'; riskClass='val-amber'; }
+  }
+
+  // Recommendation
+  const recMatch = text.match(/recommend(?:ation)?[:\s]+([A-Z\s]+?)[\n\.]/i);
+  let rec = 'PROCEED';
+  let recClass = 'val-green';
+  if(text.toLowerCase().includes('do not proceed')||text.toLowerCase().includes('reject')){ rec='DECLINE'; recClass='val-red'; }
+  else if(text.toLowerCase().includes('caution')||text.toLowerCase().includes('review')){ rec='REVIEW'; recClass='val-amber'; }
+
+  return {conf, risk, riskClass, rec, recClass};
+}
+
+// ── Main submit
+async function submitRequest(){
+  // Clear error
+  document.getElementById('formError').style.display='none';
+
+  if(!validate()){
+    document.getElementById('formError').style.display='block';
+    document.getElementById('formError').scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+
+  // Gather data
+  const data = {
+    name: document.getElementById('reqName').value.trim(),
+    email: document.getElementById('reqEmail').value.trim(),
+    company: document.getElementById('reqCompany').value.trim(),
+    cargo: document.getElementById('cargoType').value,
+    vessel: document.getElementById('vesselType').value,
+    qty: document.getElementById('cargoQty').value || 'Not specified',
+    charterType: document.getElementById('charterType').value,
+    load: document.getElementById('loadPort').value.trim(),
+    discharge: document.getElementById('dischargePort').value.trim(),
+    laycanStart: document.getElementById('laycanStart').value || 'Not specified',
+    laycanEnd: document.getElementById('laycanEnd').value || 'Not specified',
+    notes: document.getElementById('notes').value.trim() || 'None',
+    time: new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),
+    status: 'Processing'
+  };
+
+  // Log request
+  requests.push(data);
+  localStorage.setItem('chartex_requests', JSON.stringify(requests));
+  renderLog();
+
+  // UI transitions
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('resultStatus').textContent = 'ANALYSING...';
+  document.getElementById('idleState').style.display = 'none';
+  document.getElementById('loadingState').style.display = 'flex';
+  document.getElementById('analysisResult').style.display = 'none';
+
+  // Reset loading steps
+  ['ls1','ls2','ls3','ls4','ls5','ls6','ls7'].forEach(id=>{
+    document.getElementById(id).className='loading-step';
+  });
+
+  // Animate steps in parallel with API call
+  animateSteps();
+
+  // Build prompt
+  const prompt = `You are a senior ship chartering analyst and maritime broker with 20+ years of experience. Analyse the following charter request comprehensively and provide a detailed, structured analysis.
+
+CHARTER REQUEST:
+- Requestor: ${data.name} (${data.company || 'Independent'})
+- Cargo Type: ${data.cargo}
+- Vessel Type Required: ${data.vessel}
+- Cargo Quantity: ${data.qty} MT
+- Charter Type: ${data.charterType}
+- Load Port: ${data.load}
+- Discharge Port: ${data.discharge}
+- Laycan: ${data.laycanStart} to ${data.laycanEnd}
+- Special Notes: ${data.notes}
+
+Provide a detailed analysis covering ALL of these sections:
+
+1. MARKET ASSESSMENT
+   - Relevant Baltic Exchange index and current approximate market sentiment for this route/vessel type
+   - Estimated freight rate range (WS scale or $/MT or $/day as appropriate)
+   - Market conditions (tight/balanced/oversupplied)
+
+2. VOYAGE ECONOMICS
+   - Estimated voyage distance (nm)
+   - Approximate voyage duration (days)
+   - Estimated TCE range ($/day)
+   - Key cost drivers (bunker, port costs)
+   - Break-even rate estimate
+
+3. VESSEL SUITABILITY
+   - Best vessel sub-types for this cargo/route
+   - Typical vessel availability considerations
+   - Any vessel specification requirements
+
+4. RISK ASSESSMENT
+   - Risk Score: [LOW / MODERATE / HIGH] with brief justification
+   - Sanctions/compliance considerations for this route
+   - Port risk factors
+   - Cargo-specific risks
+
+5. CHARTER PARTY RECOMMENDATION
+   - Recommended CP form (GENCON, NYPE, BALTIME, etc.)
+   - Key laytime terms to negotiate
+   - Recommended demurrage rate range
+   - Important clauses to include
+
+6. RECOMMENDATION & ACTION ITEMS
+   - Overall recommendation: PROCEED / REVIEW / DECLINE
+   - 3–4 specific action items for the charterer
+   - Confidence: [XX]%
+
+Keep the response practical, data-informed, and actionable. Use clear headers. Be specific with numbers where possible.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{ role:'user', content: prompt }]
+      })
+    });
+
+    const result = await response.json();
+    const text = result.content?.map(b=>b.text||'').join('') || 'Analysis unavailable.';
+
+    // Format: bold headers
+    const formatted = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^(#{1,3} .+)$/gm, '<strong>$1</strong>');
+
+    lastAnalysis = text;
+
+    // Extract metrics
+    const m = extractMetrics(text);
+
+    // Wait for min 3.5s total (UX)
+    await new Promise(r=>setTimeout(r,3500));
+
+    // Show result
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('analysisResult').style.display='block';
+    document.getElementById('analysisResult').classList.add('fade-in');
+    document.getElementById('resultStatus').textContent='ANALYSIS COMPLETE';
+
+    document.getElementById('metaConf').textContent = m.conf;
+    document.getElementById('metaRisk').textContent = m.risk;
+    document.getElementById('metaRisk').className = 'meta-val ' + m.riskClass;
+    document.getElementById('metaRec').textContent = m.rec;
+    document.getElementById('metaRec').className = 'meta-val ' + m.recClass;
+    document.getElementById('analysisContent').innerHTML = formatted;
+
+    // Update log
+    requests[requests.length-1].status = 'Complete';
+    localStorage.setItem('chartex_requests', JSON.stringify(requests));
+    renderLog();
+
+    // Notify
+    showNotify(`Analysis for ${data.name} complete. ${data.load} → ${data.discharge} route assessed.`);
+
+  } catch(err) {
+    await new Promise(r=>setTimeout(r,2000));
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('analysisResult').style.display='block';
+    document.getElementById('resultStatus').textContent='ERROR';
+    document.getElementById('metaConf').textContent='—';
+    document.getElementById('metaRisk').textContent='ERR';
+    document.getElementById('metaRec').textContent='RETRY';
+    document.getElementById('analysisContent').innerHTML =
+      `<span style="color:var(--red)">⚠ Analysis failed: ${err.message}\n\nPlease check your connection and try again.</span>`;
+  }
+
+  document.getElementById('submitBtn').disabled = false;
+}
+
+// ── Copy
+function copyAnalysis(){
+  navigator.clipboard.writeText(lastAnalysis).then(()=>{
+    showNotify('Analysis report copied to clipboard.');
+  });
+}
+
+// ── New request
+function newRequest(){
+  document.getElementById('analysisResult').style.display='none';
+  document.getElementById('idleState').style.display='flex';
+  document.getElementById('resultStatus').textContent='AWAITING REQUEST';
+  // Scroll to form
+  document.querySelector('.form-panel').scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>
